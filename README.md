@@ -7,10 +7,6 @@ SPINE is a PyTorch package for RNA-to-protein prediction on spatial omics data.
 ## Environment
 
 Recommended environment for this repository:
-- Python `3.12`
-- PyTorch `2.7.0`
-
-The current project setup has been validated with:
 - Python `3.12.9`
 - PyTorch `2.7.0+cu118`
 
