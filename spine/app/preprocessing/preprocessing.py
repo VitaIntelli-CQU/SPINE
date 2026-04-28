@@ -58,7 +58,7 @@ def process_rna_to_protein_dataset(
     dataset_id: int,
     train_ratio: float = 0.9,
     seed: int = 42,
-    dataset_suffix: str = "MINMAX_NOHVG_NOMAP",
+    dataset_suffix: str = "",
     save_pca_embeddings: bool = True,
     pca_dim: int = 256,
     project_root: str | None = None,
@@ -76,21 +76,23 @@ def process_rna_to_protein_dataset(
     if project_root is None:
         project_root = str(repo_root / "spine")
     if raw_data_root is None:
-        raw_data_root = str(repo_root / "Data_SpatialGlue")
+        cand1 = Path("/home/wtyreally/DATASETS/SPINE_datasets/raw")
+        cand2 = repo_root / "Data_SpatialGlue"
+        raw_data_root = str(cand1 if cand1.exists() else cand2)
     
     dataset_map = {
-        1: "Dataset1_Mouse_Spleen1",
-        2: "Dataset2_Mouse_Spleen2",
-        3: "Dataset3_Mouse_Thymus1",
-        4: "Dataset4_Mouse_Thymus2",
-        5: "Dataset5_Mouse_Thymus3",
-        6: "Dataset6_Mouse_Thymus4",
-        11: "Dataset11_Human_Lymph_Node_A1",
-        12: "Dataset12_Human_Lymph_Node_D1",
+        1: "Dataset1_Human_Lymph_Node_A1",
+        2: "Dataset2_Human_Lymph_Node_D1",
+        3: "Dataset3_Human_Tonsil_Node_A1",
+        4: "Dataset4_Human_Tonsil_Node_D1",
+        5: "Dataset5_Mouse_Spleen1",
+        6: "Dataset6_Mouse_Spleen2",
     }
     
     if dataset_id not in dataset_map:
-        raise ValueError(f"Unsupported dataset_id: {dataset_id}")
+        raise ValueError(
+            f"Unsupported dataset_id: {dataset_id}. Supported ids: 1,2,3,4,5,6"
+        )
     
     raw_dir_name = dataset_map[dataset_id]
     dataset_suffix = (dataset_suffix or "").strip()
@@ -237,20 +239,20 @@ def process_rna_to_protein_dataset(
 def main(
     train_ratio: float = 0.9,
     seed: int = 42,
-    dataset_suffix: str = "MINMAX",
+    dataset_suffix: str = "",
     save_pca_embeddings: bool = True,
     pca_dim: int = 256,
     project_root: str | None = None,
     raw_data_root: str | None = None,
 ):
-    """Process every bundled RNA-to-protein dataset."""
-    rna_protein_datasets = [1, 2, 3, 4, 5, 6, 11, 12]
+    """Process currently enabled RNA-to-protein datasets."""
+    rna_protein_datasets = [1, 2, 3, 4, 5, 6]
     
     print("=" * 70)
-    print("Processing bundled RNA-to-protein datasets")
+    print("Processing enabled RNA-to-protein datasets")
     print("=" * 70)
     print(f"Datasets to process: {len(rna_protein_datasets)}")
-    print("Excluded datasets: 7, 8, 9, 10")
+    print(f"Dataset ids: {rna_protein_datasets}")
     print("=" * 70)
     
     results = []
@@ -295,10 +297,10 @@ def main_cli():
     parser.add_argument('--seed', type=int, default=42, help='Random seed for split generation')
     parser.add_argument('--no_pca', action='store_true', help='Do not write embeddings_pca into the RNA embedding HDF5 files')
     parser.add_argument('--pca_dim', type=int, default=256, help='Number of PCA components to save when PCA output is enabled')
-    parser.add_argument('--dataset_suffix', type=str, default="MINMAX",
+    parser.add_argument('--dataset_suffix', type=str, default="",
                        help='Suffix appended to the processed dataset name')
     parser.add_argument('--dataset_id', type=int, default=None, 
-                       help='Process only one dataset id; process all supported datasets when omitted')
+                       help='Process only one dataset id (supported: 1,2,3,4,5,6); process all supported datasets when omitted')
     parser.add_argument('--project_root', type=str, default=None,
                        help='Path to the SPINE package root that contains the dataset directories')
     parser.add_argument('--raw_data_root', type=str, default=None,

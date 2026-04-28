@@ -113,15 +113,12 @@ def main(args, split_id, train_sample_ids, test_sample_ids, val_save_dir, checkp
     # Denoiser = 时间嵌入 + MLP 输入映射 + SpatialTransformer 主干
     model = Denoiser(args).to(device)
 
-    # Interpolant 负责构造 flow matching 的噪声/先验（例如 ZINB），训练时会随机采样时间步
-    # 修复：传递正确的设备参数，确保所有张量在同一设备上
+    # Interpolant 负责构造 flow matching 噪声/先验（发布版固定为 Gaussian prior）
+    # 传递正确的设备参数，确保所有张量在同一设备上
     device_str = f"cuda:{device}" if isinstance(device, int) else device
     diffusier = Interpolant(
         args.prior_sampler,
         device=device_str,
-        total_count=torch.tensor([args.zinb_total_count]),
-        logits=torch.tensor([args.zinb_logits]),
-        zi_logits=args.zinb_zi_logits,
         normalize=args.prior_sampler != "gaussian",
     )
     weight_decay = getattr(args, 'weight_decay', 1e-4)
@@ -296,7 +293,7 @@ if __name__ == "__main__":
     parser.add_argument("--feature_dim", type=int, default=-1)
     parser.add_argument("--n_proteins", "--n_genes", dest="n_proteins", type=int, default=51,
                         help="预测蛋白数量")
-    parser.add_argument("--batch_size", type=int, default=2)
+    parser.add_argument("--batch_size", type=int, default=1)
     parser.add_argument("--gradient_accumulation_steps", type=int, default=2)
     parser.add_argument("--lr", type=float, default=5e-5)
     parser.add_argument("--epochs", type=int, default=500)
@@ -319,12 +316,9 @@ if __name__ == "__main__":
         help="早停监控指标：mse(越小越好) / pcc(越大越好)",
     )
 
-    parser.add_argument("--n_sample_steps", type=int, default=10,
-                        help="Flow Matching 采样步数，增加步数可提升预测分布准确性")
-    parser.add_argument("--prior_sampler", type=str, default="gaussian")
-    parser.add_argument("--zinb_logits", type=float, default=0.1)
-    parser.add_argument("--zinb_total_count", type=float, default=1.0)
-    parser.add_argument("--zinb_zi_logits", type=float, default=0.0)
+    # Release-locked generative settings (kept for backward CLI compatibility but hidden from help).
+    parser.add_argument("--n_sample_steps", type=int, default=10, help=argparse.SUPPRESS)
+    parser.add_argument("--prior_sampler", type=str, default="gaussian", help=argparse.SUPPRESS)
 
     parser.add_argument("--backbone", type=str, default="spatial_transformer")
     parser.add_argument("--hidden_dim", type=int, default=256)
@@ -333,7 +327,8 @@ if __name__ == "__main__":
     parser.add_argument("--dropout", type=float, default=0.3)
     parser.add_argument("--attn_dropout", type=float, default=0.3)
     parser.add_argument("--n_heads", type=int, default=8)
-    parser.add_argument("--n_neighbors", type=int, default=8)
+    # Release-locked graph neighborhood setting (hidden to avoid ablation exposure).
+    parser.add_argument("--n_neighbors", type=int, default=8, help=argparse.SUPPRESS)
     parser.add_argument("--activation", type=str, default="swiglu")
     parser.add_argument("--device", type=int, default=0)
     parser.add_argument("--exp_code", type=str, default="rna_to_protein")
@@ -343,12 +338,8 @@ if __name__ == "__main__":
                         help='Intermediate dim for RNA embedding (默认 1024，适配 ~3k RNA 基因)')
     parser.add_argument("--mlp_num_layers", type=int, default=2, choices=[2, 3],
                         help='Number of layers in MLP mapping: 2 (feature_dim→intermediate→hidden) or 3 (feature_dim→large→medium→hidden)')
-    parser.add_argument(
-        "--gene_recon_weight",
-        type=float,
-        default=0.2,
-        help="额外的 RNA/embedding 重建损失权重（Denoiser.gene_decoder），默认 0.2；设为 0 表示关闭",
-    )
+    # Release-locked reconstruction weight (hidden to avoid ablation exposure).
+    parser.add_argument("--gene_recon_weight", type=float, default=0.2, help=argparse.SUPPRESS)
 
     args = parser.parse_args()
 
@@ -375,7 +366,12 @@ if __name__ == "__main__":
         print(f"⚠️  警告: 未找到蛋白列表文件 {protein_list_path}，使用默认 n_proteins={args.n_proteins}")
     
     # Final production defaults for SPINE RNA-to-protein training.
+    # These values are intentionally fixed in release mode to avoid exposing ablation switches.
     args.loss_type = "mse"
+    args.gene_recon_weight = 0.2
+    args.n_neighbors = 8
+    args.n_sample_steps = 10
+    args.prior_sampler = "gaussian"
     args.use_lr_scheduler = False
     args.scheduler_type = "plateau"
     args.use_cosine_edge = True

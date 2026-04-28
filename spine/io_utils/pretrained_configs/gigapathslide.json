@@ -1,9 +1,0 @@
-{
-    "name": "gigapathslide",
-    "img_norm": "imagenet",
-    "loader": "gigapathslide",
-    "loader_kwargs": {
-        "model_name": "vit_giant_patch14_dinov2"
-    },
-    "checkpoint_path": ""
-}

@@ -18,3 +18,8 @@ Thumbs.db
 .env
 .venv/
 venv/
+
+*.h5
+*.h5ad
+demo_data/
+spine/dataset/
