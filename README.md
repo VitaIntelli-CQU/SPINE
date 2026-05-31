@@ -48,6 +48,7 @@ python spine/app/flow/train_rna_to_protein.py \
 # Citation
 
 If you find our codes useful, please consider citing our work:
+~~~bibtex
 
 @article{luSPINE,
   title={SPINE: Neighborhood-Guided Flow Matching for Protein Inference from Spatial Transcriptomes},
@@ -55,3 +56,6 @@ If you find our codes useful, please consider citing our work:
   journal={BioRxiv},
   year={2026},
 }
+
+~~~
+
