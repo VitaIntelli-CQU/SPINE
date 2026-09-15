@@ -45,15 +45,22 @@ python spine/app/flow/train_rna_to_protein.py \
     --epochs 500
 ```
 
-# Citation
+## Citation
 
-If you find our codes useful, please consider citing our work:
-~~~bibtex
-@article{luSPINE,
-  title={SPINE: Neighborhood-Guided Flow Matching for Protein Inference from Spatial Transcriptomes},
-  author={Xingming Lu, Jiangshan Xu, Jiajin Wang, Nuodi Fan, Sijie Wan, Jin Mao, Yunqing Fu, Yuansong Zeng},
-  journal={BioRxiv},
-  year={2026},
+If you find SPINE or this repository useful in your research, please cite our paper:
+
+```bibtex
+@article{lu2027spine,
+  title   = {{SPINE}: Context-guided iterative protein inference from spatial transcriptomes},
+  author  = {Lu, Xingming and Xu, Jiangshan and Wang, Jiajin and Fan, Nuodi
+             and Wan, Sijie and Mao, Jin and Fu, Yunqing and Zeng, Yuansong},
+  journal = {Expert Systems with Applications},
+  volume  = {332},
+  pages   = {133652},
+  year    = {2027},
+  issn    = {0957-4174},
+  doi     = {10.1016/j.eswa.2026.133652},
+  url     = {https://www.sciencedirect.com/science/article/pii/S0957417426025601}
 }
-~~~
+```
 
